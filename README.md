@@ -98,3 +98,11 @@ Use the numbered menu to add, list, search, borrow, and return books. Catalogue 
 **Intermediate - persistence:** `Main` opens `jdbc:sqlite:library.db`. `Library` creates a `books` table if needed, loads existing rows on startup, inserts on add, and updates `isBorrowed` on borrow and return so a restart restores the catalogue.
 
 Author search and sorting remain as they were; they are outside this persistence change.
+
+
+I added this. Need to make it into good readme just for this section.
+Handle exception when duplication books are being added. same author name and same book name.
+Better search for books, by implementing contains and case insenstive and partialsearch
+Cannot add books with empty parameters.
+Better message when no books are in the system, or when none are available.
+More options such as Search Books by author, delete a book and update a book and better tests and error handling.

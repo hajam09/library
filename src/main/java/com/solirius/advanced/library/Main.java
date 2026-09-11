@@ -2,90 +2,19 @@ package com.solirius.advanced.library;
 
 import com.solirius.advanced.library.exceptions.AlreadyBorrowedException;
 import com.solirius.advanced.library.exceptions.BookNotFoundException;
+import com.solirius.advanced.library.exceptions.DuplicateBookException;
 import com.solirius.advanced.library.exceptions.NotBorrowedException;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Comparator;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 
+import static com.solirius.advanced.library.Constants.*;
+
 public final class Main {
-
-    /**
-     * The main menu.
-     */
-    public static final String MENU = "\nMenu:"
-        + "\n1. Add a new book"
-        + "\n2. View available books"
-        + "\n3. View all books"
-        + "\n4. Search for a book"
-        + "\n5. Borrow a book"
-        + "\n6. Return a book"
-        + "\n7. Exit"
-        + "\nEnter your choice: ";
-
-    /**
-     * The main menu.
-     */
-    public static final String SORT_MENU = "\nSort by:"
-        + "\n1. Author"
-        + "\n2. Title"
-        + "\nEnter your choice: ";
-    /**
-     * Option to sort by author.
-     */
-    public static final int AUTHOR = 1;
-    /**
-     * Option to sort by title.
-     */
-    public static final int TITLE = 2;
-    /**
-     * Option to add a Book.
-     */
-    public static final int ADD_A_BOOK_OPTION = 1;
-    /**
-     * Option to list available Books.
-     */
-    public static final int LIST_AVAILABLE_BOOKS = 2;
-    /**
-     * Option to list all Books.
-     */
-    public static final int LIST_ALL_BOOKS = 3;
-    /**
-     * Option to search a Book.
-     */
-    public static final int SEARCH_BOOK_OPTION = 4;
-    /**
-     * Option to borrow a Book.
-     */
-    public static final int BORROW_BOOK_OPTION = 5;
-    /**
-     * Option to return a Book.
-     */
-    public static final int RETURN_BOOK_OPTION = 6;
-    /**
-     * Option to terminate the program.
-     */
-    public static final int EXIT_OPTION = 7;
-
-    /**
-     * String constants.
-     */
-    public static final String OPENED = "Opened library database successfully";
-    public static final String WELCOME = "Welcome to the Library Management System!";
-    public static final String ENTER_TITLE = "Enter book title: ";
-    public static final String ENTER_AUTHOR = "Enter book author: ";
-    public static final String BOOK_ADDED = "Book added successfully!";
-    public static final String BOOK_NOT_ADDED = "Book not added.";
-    public static final String ALL_BOOKS = "All books:";
-    public static final String AVAILABLE_BOOKS = "Available books:";
-    public static final String INVALID = "Invalid choice. Please try again.";
-    public static final String EXIT = "Thank you for using the Library Management System!";
-    public static final String RETURNED = "Book returned successfully!";
-    public static final String BORROWED = "Book borrowed successfully!";
-    public static final String TITLE_AUTHOR_SEARCH = "Enter the title or author of the book to search: ";
-    public static final String TITLE_BORROW = "Enter the title of the book to borrow: ";
-    public static final String TITLE_RETURN = "Enter the title of the book to return: ";
 
     private static Library library;
 
@@ -95,6 +24,7 @@ public final class Main {
 
     /**
      * Initialises the LMS program.
+     *
      * @param args from the command line.
      */
     public static void main(final String[] args) {
@@ -118,7 +48,7 @@ public final class Main {
 
         while (running) {
             System.out.println(MENU);
-            int choice = validateChoices(scanner, 1, 7);
+            int choice = validateChoices(scanner, 1, 9);
             scanner.nextLine(); // Consume newline
             String title;
             switch (choice) {
@@ -127,24 +57,33 @@ public final class Main {
                     title = scanner.nextLine();
                     System.out.print(ENTER_AUTHOR);
                     String author = scanner.nextLine();
-                    boolean success = library.addBook(new Book(title, author));
-                    System.out.println(success ? BOOK_ADDED : BOOK_NOT_ADDED);
+                    try {
+                        boolean success = library.addBook(new Book(title, author));
+                        System.out.println(success ? BOOK_ADDED : BOOK_NOT_ADDED);
+                    } catch (DuplicateBookException | IllegalArgumentException exception) {
+                        System.out.println(exception.getMessage());
+                    }
                     break;
 
                 case LIST_ALL_BOOKS:
+                    List<Book> allBooks = library.viewAllBooks();
+                    if (allBooks.isEmpty()) {
+                        System.out.println(NO_BOOKS_AVAILABLE);
+                        break;
+                    }
                     System.out.println(SORT_MENU);
                     int sortAllChoice = validateChoices(scanner, 1, 2);
                     System.out.println(ALL_BOOKS);
                     switch (sortAllChoice) {
                         case AUTHOR:
-                            library.viewAllBooks().stream()
-                                .sorted(Comparator.comparing(Book::getAuthor))
-                                .forEach(System.out::println);
+                            allBooks.stream()
+                                    .sorted(Comparator.comparing(Book::getAuthor))
+                                    .forEach(System.out::println);
                             break;
                         case TITLE:
-                            library.viewAllBooks().stream()
-                                .sorted(Comparator.comparing(Book::getTitle))
-                                .forEach(System.out::println);
+                            allBooks.stream()
+                                    .sorted(Comparator.comparing(Book::getTitle))
+                                    .forEach(System.out::println);
                             break;
                         default:
                             System.out.println(INVALID);
@@ -152,19 +91,25 @@ public final class Main {
                     break;
 
                 case LIST_AVAILABLE_BOOKS:
+                    List<Book> availableBooks = library.viewAvailableBooks();
+                    if (availableBooks.isEmpty()) {
+                        System.out.println(NO_BOOKS_AVAILABLE);
+                        break;
+                    }
+
                     System.out.println(SORT_MENU);
                     int sortAvailableChoice = validateChoices(scanner, 1, 2);
                     System.out.println(AVAILABLE_BOOKS);
                     switch (sortAvailableChoice) {
                         case AUTHOR:
-                            library.viewAvailableBooks().stream()
-                                .sorted(Comparator.comparing(Book::getAuthor))
-                                .forEach(System.out::println);
+                            availableBooks.stream()
+                                    .sorted(Comparator.comparing(Book::getAuthor))
+                                    .forEach(System.out::println);
                             break;
                         case TITLE:
-                            library.viewAvailableBooks().stream()
-                                .sorted(Comparator.comparing(Book::getTitle))
-                                .forEach(System.out::println);
+                            availableBooks.stream()
+                                    .sorted(Comparator.comparing(Book::getTitle))
+                                    .forEach(System.out::println);
                             break;
                         default:
                             System.out.println(INVALID);
@@ -202,6 +147,34 @@ public final class Main {
                     } catch (BookNotFoundException | NotBorrowedException e) {
                         System.out.println(e.getMessage());
                     }
+                    break;
+                case VIEW_BOOKS_BY_AUTHOR:
+                    System.out.print(TITLE_VIEW_BOOKS_BY_AUTHOR);
+                    title = scanner.nextLine();
+                    try {
+                        List<Book> booksByAuthor = library.searchByAuthor(title);
+                        if (booksByAuthor.isEmpty()) {
+                            System.out.println(NO_BOOKS_AVAILABLE);
+                            break;
+                        }
+
+                        booksByAuthor.forEach(System.out::println);
+                    } catch (BookNotFoundException e) {
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                case DELETE_A_BOOK:
+                    List<Book> viewAvailableBooksToDelete = library.viewAvailableBooks();
+                    if (viewAvailableBooksToDelete.isEmpty()) {
+                        System.out.println(NO_BOOKS_AVAILABLE);
+                        break;
+                    }
+                    for (int i = 0; i < viewAvailableBooksToDelete.size(); i++) {
+                        System.out.println((i + 1) + " : " + viewAvailableBooksToDelete.get(i));
+                    }
+                    int deleteChoice = validateChoices(scanner, 1, viewAvailableBooksToDelete.size());
+                    Book bookToDelete = viewAvailableBooksToDelete.get(deleteChoice - 1);
+                    library.deleteBook(bookToDelete);
                     break;
 
                 case EXIT_OPTION:

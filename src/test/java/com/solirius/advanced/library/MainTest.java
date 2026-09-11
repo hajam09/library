@@ -1,12 +1,12 @@
 package com.solirius.advanced.library;
 
-import static com.solirius.advanced.library.Main.*;
-import static com.solirius.advanced.library.Library.*;
+import static com.solirius.advanced.library.Constants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.solirius.advanced.library.exceptions.AlreadyBorrowedException;
 import com.solirius.advanced.library.exceptions.BookNotFoundException;
+import com.solirius.advanced.library.exceptions.DuplicateBookException;
 import com.solirius.advanced.library.exceptions.NotBorrowedException;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -25,14 +25,17 @@ class MainTest {
 
     @Mock
     private Connection mockConnection;
+
     @Mock
+
     private Library mockLibrary;
     private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
     private Book book1;
     private Book book2;
     private Book book3;
+
     @BeforeEach
-    void setUp() throws SQLException, BookNotFoundException, AlreadyBorrowedException, NotBorrowedException {
+    void setUp() throws SQLException, BookNotFoundException, AlreadyBorrowedException, NotBorrowedException, DuplicateBookException {
         MockitoAnnotations.openMocks(this);
         book1 = new Book("Mock Title 1", "Mock Author 2");
         book2 = new Book("Mock Title 2", "Mock Author 3");
@@ -65,7 +68,7 @@ class MainTest {
     }
 
     @Test
-    void testMain_AddBook() {
+    void testMain_AddBook() throws DuplicateBookException{
         String input = "1\nMock Title\nMock Author\n7\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
@@ -84,7 +87,7 @@ class MainTest {
     }
 
     @Test
-    void testMain_AddBookFail() {
+    void testMain_AddBookFail() throws DuplicateBookException {
         String input = "1\nMock Title 1\nMock Author 2\n7\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
@@ -323,8 +326,18 @@ class MainTest {
     }
 
     @Test
+    void testMain_DeleteBookNoneAvailable() {
+
+    }
+
+    @Test
+    void testMain_DeleteBookSuccess() {
+
+    }
+
+    @Test
     void testMain_Exit() {
-        String input = "7\n";
+        String input = "10\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
         Main.main(new String[]{});

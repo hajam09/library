@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import com.solirius.advanced.library.exceptions.AlreadyBorrowedException;
 import com.solirius.advanced.library.exceptions.BookNotFoundException;
+import com.solirius.advanced.library.exceptions.DuplicateBookException;
 import com.solirius.advanced.library.exceptions.NotBorrowedException;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -89,7 +90,7 @@ class LibraryTest {
     }
 
     @Test
-    void testAddBook() throws SQLException {
+    void testAddBook() throws SQLException, DuplicateBookException {
         Book book = new Book("Brave New World", "Aldous Huxley");
         when(mockPreparedStatement.executeUpdate()).thenReturn(1);
         library = new Library(mockConnection);
@@ -103,7 +104,7 @@ class LibraryTest {
     }
 
     @Test
-    void testAddBookReturnsFalse_WhenSqlExceptionThrown() throws SQLException {
+    void testAddBookReturnsFalse_WhenSqlExceptionThrown() throws SQLException, DuplicateBookException {
         Book book = new Book("Brave New World", "Aldous Huxley");
         when(mockConnection.prepareStatement(anyString())).thenThrow(new SQLException("Test message."));
         library = new Library(mockConnection);
@@ -118,7 +119,7 @@ class LibraryTest {
     }
 
     @Test
-    void testViewAvailableBooks() {
+    void testViewAvailableBooks() throws DuplicateBookException{
         Book book1 = new Book("1984", "George Orwell");
         Book book2 = new Book("The Catcher in the Rye", "J.D. Salinger");
         library = new Library(mockConnection);
@@ -130,7 +131,7 @@ class LibraryTest {
     }
 
     @Test
-    void testViewAllBooks() throws AlreadyBorrowedException, BookNotFoundException {
+    void testViewAllBooks() throws AlreadyBorrowedException, BookNotFoundException, DuplicateBookException {
         Book book1 = new Book("1984", "George Orwell");
         Book book2 = new Book("The Catcher in the Rye", "J.D. Salinger");
         library = new Library(mockConnection);
@@ -145,7 +146,7 @@ class LibraryTest {
     }
 
     @Test
-    void testSearchBook_WhenBookExists() throws BookNotFoundException {
+    void testSearchBook_WhenBookExists() throws BookNotFoundException, DuplicateBookException {
         Book book = new Book("1984", "George Orwell");
         library = new Library(mockConnection);
         library.addBook(book);
@@ -162,7 +163,7 @@ class LibraryTest {
     }
 
     @Test
-    void testBorrowBook_WhenBookIsAvailable() throws AlreadyBorrowedException, BookNotFoundException {
+    void testBorrowBook_WhenBookIsAvailable() throws AlreadyBorrowedException, BookNotFoundException, DuplicateBookException {
         Book book = new Book("1984", "George Orwell");
         library = new Library(mockConnection);
         library.addBook(book);
@@ -173,7 +174,7 @@ class LibraryTest {
     }
 
     @Test
-    void testBorrowBook_WhenBookIsNotAvailable() {
+    void testBorrowBook_WhenBookIsNotAvailable() throws DuplicateBookException {
         Book book = new Book("1984", "George Orwell");
         book.borrowBook();
         library = new Library(mockConnection);
@@ -189,7 +190,7 @@ class LibraryTest {
     }
 
     @Test
-    void testReturnBook_WhenBookIsBorrowed() throws AlreadyBorrowedException, BookNotFoundException, NotBorrowedException {
+    void testReturnBook_WhenBookIsBorrowed() throws AlreadyBorrowedException, BookNotFoundException, NotBorrowedException, DuplicateBookException {
         Book book = new Book("1984", "George Orwell");
         library = new Library(mockConnection);
         library.addBook(book);
@@ -202,7 +203,7 @@ class LibraryTest {
     }
 
     @Test
-    void testReturnBook_WhenBookIsNotBorrowed() {
+    void testReturnBook_WhenBookIsNotBorrowed() throws DuplicateBookException {
         Book book = new Book("1984", "George Orwell");
         library = new Library(mockConnection);
         library.addBook(book);
@@ -231,7 +232,7 @@ class LibraryTest {
     }
 
     @Test
-    void testSearchBook_WhenMatchingAuthorIgnoringCase() throws BookNotFoundException {
+    void testSearchBook_WhenMatchingAuthorIgnoringCase() throws BookNotFoundException, DuplicateBookException {
         Book book = new Book("1984", "George Orwell");
         library = new Library(mockConnection);
         library.addBook(book);
@@ -242,7 +243,7 @@ class LibraryTest {
     }
 
     @Test
-    void testSearchBook_WhenMatchingTitleIgnoringCase() throws BookNotFoundException {
+    void testSearchBook_WhenMatchingTitleIgnoringCase() throws BookNotFoundException, DuplicateBookException {
         Book book = new Book("1984", "George Orwell");
         library = new Library(mockConnection);
         library.addBook(book);
@@ -256,11 +257,11 @@ class LibraryTest {
         BookNotFoundException exception = assertThrows(
                 BookNotFoundException.class,
                 () -> library.searchBook("Nonexistent Book"));
-        assertEquals(Library.BOOK_NOT_FOUND, exception.getMessage());
+        assertEquals(Constants.BOOK_NOT_FOUND, exception.getMessage());
     }
 
     @Test
-    void testBorrowBook_WhenBookIsNotAvailable_HasExpectedMessage() {
+    void testBorrowBook_WhenBookIsNotAvailable_HasExpectedMessage() throws DuplicateBookException {
         Book book = new Book("1984", "George Orwell");
         book.borrowBook();
         library = new Library(mockConnection);
@@ -269,11 +270,11 @@ class LibraryTest {
         AlreadyBorrowedException exception = assertThrows(
                 AlreadyBorrowedException.class,
                 () -> library.borrowBook("1984"));
-        assertEquals(Library.BOOK_ALREADY_BORROWED, exception.getMessage());
+        assertEquals(Constants.BOOK_ALREADY_BORROWED, exception.getMessage());
     }
 
     @Test
-    void testReturnBook_WhenBookIsNotBorrowed_HasExpectedMessage() {
+    void testReturnBook_WhenBookIsNotBorrowed_HasExpectedMessage() throws DuplicateBookException{
         Book book = new Book("1984", "George Orwell");
         library = new Library(mockConnection);
         library.addBook(book);
@@ -281,11 +282,11 @@ class LibraryTest {
         NotBorrowedException exception = assertThrows(
                 NotBorrowedException.class,
                 () -> library.returnBook("1984"));
-        assertEquals(Library.BOOK_NOT_BORROWED, exception.getMessage());
+        assertEquals(Constants.BOOK_NOT_BORROWED, exception.getMessage());
     }
 
     @Test
-    void testAddBook_WhenBookAlreadyBorrowed() {
+    void testAddBook_WhenBookAlreadyBorrowed() throws DuplicateBookException{
         Book book = new Book("1984", "George Orwell");
         book.borrowBook();
         library = new Library(mockConnection);
@@ -296,10 +297,15 @@ class LibraryTest {
     }
 
     @Test
-    void testAddBook_WhenBookIsNull() {
+    void testAddBook_WhenBookIsNull() throws IllegalArgumentException {
         library = new Library(mockConnection);
-        assertFalse(library.addBook(null));
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> library.addBook(null));
+
         assertEquals(0, library.viewAllBooks().size());
+        assertEquals(Constants.BOOK_EMPTY_FIELDS, exception.getMessage());
     }
 
     @Test
@@ -329,5 +335,100 @@ class LibraryTest {
         verify(mockPreparedStatement).setBoolean(1, false);
         verify(mockPreparedStatement, atLeastOnce()).setString(2, "1984");
         verify(mockPreparedStatement, atLeastOnce()).setString(3, "George Orwell");
+    }
+
+    @Test
+    void testAddSameBookAgain() throws DuplicateBookException{
+        Book book = new Book("1984", "George Orwell");
+        library = new Library(mockConnection);
+        assertTrue(library.addBook(book));
+
+        DuplicateBookException exception = assertThrows(
+                DuplicateBookException.class,
+                () -> library.addBook(book));
+        assertEquals(Constants.BOOK_ALREADY_EXISTS, exception.getMessage());
+    }
+
+    @Test
+    void testSearchForBookByPartial() throws BookNotFoundException, DuplicateBookException {
+        Book book = new Book("1984", "George Orwell");
+        library = new Library(mockConnection);
+        library.addBook(book);
+        Book foundBook = library.searchBook("george");
+
+        assertNotNull(foundBook);
+        assertEquals("1984", foundBook.getTitle());
+    }
+
+
+    @Test
+    void testAddBookWithEmptyParameters() throws IllegalArgumentException {
+        Book book = new Book("", "  ");
+        library = new Library(mockConnection);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> library.addBook(book));
+        assertEquals(Constants.BOOK_EMPTY_FIELDS, exception.getMessage());
+    }
+
+    @Test
+    void testSearchBooksByAuthorAndFound() throws DuplicateBookException, BookNotFoundException {
+        library = new Library(mockConnection);
+        List<Book> books = List.of(
+                new Book("Cup of Gold", "John Steinbeck"),
+                new Book("The Pastures of Heaven", "John Steinbeck"),
+                new Book("Keep the Aspidistra Flying", "George Orwell"),
+                new Book("1984", "George Orwell"),
+                new Book("Animal Farm", "George Orwell"),
+                new Book("In Dubious Battle", "John Steinbeck")
+        );
+
+        for (Book book : books) {
+            library.addBook(book);
+        }
+
+        assertEquals(6, library.viewAllBooks().size());
+
+        List<Book> foundBooks = library.searchByAuthor("steinbeck");
+        assertEquals(3, foundBooks.size());
+
+        assertEquals("Cup of Gold", foundBooks.get(0).getTitle());
+        assertEquals("The Pastures of Heaven", foundBooks.get(1).getTitle());
+        assertEquals("In Dubious Battle", foundBooks.get(2).getTitle());
+    }
+
+    @Test
+    void testSearchBooksByAuthorAndNoneFound() throws DuplicateBookException, BookNotFoundException {
+        library = new Library(mockConnection);
+        List<Book> books = List.of(
+                new Book("Cup of Gold", "John Steinbeck"),
+                new Book("The Pastures of Heaven", "John Steinbeck"),
+                new Book("Keep the Aspidistra Flying", "George Orwell"),
+                new Book("1984", "George Orwell"),
+                new Book("Animal Farm", "George Orwell"),
+                new Book("In Dubious Battle", "John Steinbeck")
+        );
+
+        for (Book book : books) {
+            library.addBook(book);
+        }
+
+        assertEquals(6, library.viewAllBooks().size());
+        BookNotFoundException exception = assertThrows(
+                BookNotFoundException.class,
+                () -> library.searchByAuthor("no"));
+        assertEquals(Constants.BOOK_NOT_FOUND, exception.getMessage());
+    }
+
+    @Test
+    void testDeleteBook() throws DuplicateBookException {
+        Book book = new Book("1984", "George Orwell");
+        library = new Library(mockConnection);
+        library.addBook(book);
+
+        assertEquals(1, library.viewAllBooks().size());
+        assertTrue(library.deleteBook(book));
+        assertEquals(0, library.viewAllBooks().size());
     }
 }
