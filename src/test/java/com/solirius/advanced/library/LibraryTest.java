@@ -294,4 +294,11 @@ class LibraryTest {
         assertTrue(library.viewAvailableBooks().isEmpty());
         assertEquals(1, library.viewAllBooks().size());
     }
+
+    @Test
+    void testAddBook_WhenBookIsNull() {
+        library = new Library(mockConnection);
+        assertFalse(library.addBook(null));
+        assertEquals(0, library.viewAllBooks().size());
+    }
 }

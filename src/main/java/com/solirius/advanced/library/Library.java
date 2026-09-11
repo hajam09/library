@@ -67,6 +67,9 @@ public class Library {
      * @return true if successful, otherwise false
      */
     public boolean addBook(final Book book) {
+        if (book == null) {
+            return false;
+        }
         try {
             String query = "INSERT INTO books (title, author, isBorrowed) VALUES (?, ?, ?)";
             var preparedStatement = connection.prepareStatement(query);

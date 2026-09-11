@@ -69,3 +69,30 @@ Include:
  * Handling edge cases and exceptions.
  * Implementation of bonus features (if any).
  * Clarity and thoroughness of the README file.
+
+## How to run
+
+Requires Java 11+ and Maven.
+
+```bash
+mvn test
+mvn compile
+mvn -q org.codehaus.mojo:exec-maven-plugin:3.5.0:java -Dexec.mainClass=com.solirius.advanced.library.Main
+```
+
+Use the numbered menu to add, list, search, borrow, and return books. State is stored in `library.db` in the working directory.
+
+## Approach and features implemented
+
+`Book` owns a single book's title, author, and borrow flag. `Library` owns the catalogue and the SQLite connection. `Main` only reads menu input and prints results.
+
+**Graduate:** JUnit tests for `Book` and `Library` (`BookTest`, `LibraryTest`).
+
+**Intermediate - exception handling:** Catalogue operations use checked exceptions instead of silent `false`/`null` results:
+ * `BookNotFoundException` - search, borrow, or return of a title/author that is not in the library
+ * `AlreadyBorrowedException` - borrow of a book that is already out
+ * `NotBorrowedException` - return of a book that is not currently borrowed
+
+`Main` catches these, prints the exception message, and keeps the menu running. Adding a `null` book is rejected (`addBook` returns `false`). Invalid menu input is rejected without exiting.
+
+Persistence, author search, and sorting are already present in the project; they are outside this exception-handling change.

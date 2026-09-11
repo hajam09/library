@@ -229,6 +229,9 @@ public final class Main {
                 validChoice = true;
             } catch (InputMismatchException inputMismatchException) {
                 System.out.println(INVALID);
+                if (!scanner.hasNextInt() && scanner.hasNext()) {
+                    scanner.next();
+                }
             }
         }
         return choice;
