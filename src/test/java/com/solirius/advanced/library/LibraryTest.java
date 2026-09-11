@@ -301,4 +301,33 @@ class LibraryTest {
         assertFalse(library.addBook(null));
         assertEquals(0, library.viewAllBooks().size());
     }
+
+    @Test
+    void testBorrowBook_PersistsBorrowedState() throws Exception {
+        Book book = new Book("1984", "George Orwell");
+        library = new Library(mockConnection);
+        library.addBook(book);
+
+        assertTrue(library.borrowBook("1984"));
+
+        verify(mockConnection).prepareStatement("UPDATE books SET isBorrowed = ? WHERE title = ? AND author = ?");
+        verify(mockPreparedStatement).setBoolean(1, true);
+        verify(mockPreparedStatement, atLeastOnce()).setString(2, "1984");
+        verify(mockPreparedStatement, atLeastOnce()).setString(3, "George Orwell");
+    }
+
+    @Test
+    void testReturnBook_PersistsReturnedState() throws Exception {
+        Book book = new Book("1984", "George Orwell");
+        library = new Library(mockConnection);
+        library.addBook(book);
+        library.borrowBook("1984");
+
+        assertTrue(library.returnBook("1984"));
+
+        verify(mockConnection, times(2)).prepareStatement("UPDATE books SET isBorrowed = ? WHERE title = ? AND author = ?");
+        verify(mockPreparedStatement).setBoolean(1, false);
+        verify(mockPreparedStatement, atLeastOnce()).setString(2, "1984");
+        verify(mockPreparedStatement, atLeastOnce()).setString(3, "George Orwell");
+    }
 }

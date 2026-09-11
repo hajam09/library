@@ -128,7 +128,9 @@ public class Library {
         if (book.isBorrowed()) {
             throw new AlreadyBorrowedException(BOOK_ALREADY_BORROWED);
         }
-        return book.borrowBook();
+        boolean borrowed = book.borrowBook();
+        persistBorrowedState(book);
+        return borrowed;
     }
 
     /**
@@ -142,6 +144,27 @@ public class Library {
         if (!book.isBorrowed()) {
             throw new NotBorrowedException(BOOK_NOT_BORROWED);
         }
-        return book.returnBook();
+        boolean returned = book.returnBook();
+        persistBorrowedState(book);
+        return returned;
+    }
+
+    /**
+     * Writes the book's borrowed flag to the database so it survives restart.
+     *
+     * @param book the book whose state should be saved
+     */
+    private void persistBorrowedState(final Book book) {
+        try {
+            String query = "UPDATE books SET isBorrowed = ? WHERE title = ? AND author = ?";
+            var preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setBoolean(1, book.isBorrowed());
+            preparedStatement.setString(2, book.getTitle());
+            preparedStatement.setString(3, book.getAuthor());
+            preparedStatement.executeUpdate();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            System.out.println("Error saving library to the database: " + e.getMessage());
+        }
     }
 }

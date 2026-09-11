@@ -16,8 +16,8 @@ public final class Main {
      */
     public static final String MENU = "\nMenu:"
         + "\n1. Add a new book"
-        + "\n2. View all books"
-        + "\n3. View available books"
+        + "\n2. View available books"
+        + "\n3. View all books"
         + "\n4. Search for a book"
         + "\n5. Borrow a book"
         + "\n6. Return a book"

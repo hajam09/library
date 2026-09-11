@@ -80,7 +80,7 @@ mvn compile
 mvn -q org.codehaus.mojo:exec-maven-plugin:3.5.0:java -Dexec.mainClass=com.solirius.advanced.library.Main
 ```
 
-Use the numbered menu to add, list, search, borrow, and return books. State is stored in `library.db` in the working directory.
+Use the numbered menu to add, list, search, borrow, and return books. Catalogue state is stored in SQLite file `library.db` in the working directory and is reloaded the next time the application starts.
 
 ## Approach and features implemented
 
@@ -95,4 +95,6 @@ Use the numbered menu to add, list, search, borrow, and return books. State is s
 
 `Main` catches these, prints the exception message, and keeps the menu running. Adding a `null` book is rejected (`addBook` returns `false`). Invalid menu input is rejected without exiting.
 
-Persistence, author search, and sorting are already present in the project; they are outside this exception-handling change.
+**Intermediate - persistence:** `Main` opens `jdbc:sqlite:library.db`. `Library` creates a `books` table if needed, loads existing rows on startup, inserts on add, and updates `isBorrowed` on borrow and return so a restart restores the catalogue.
+
+Author search and sorting remain as they were; they are outside this persistence change.
