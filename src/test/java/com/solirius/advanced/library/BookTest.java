@@ -44,4 +44,21 @@ class BookTest {
         book.borrowBook();
         assertEquals("The Great Gatsby by F. Scott Fitzgerald (Borrowed)", book.toString());
     }
+
+    @Test
+    void testConstructor_SetsTitleAuthorAndAvailable() {
+        Book book = new Book("The Great Gatsby", "F. Scott Fitzgerald");
+        assertEquals("The Great Gatsby", book.getTitle());
+        assertEquals("F. Scott Fitzgerald", book.getAuthor());
+        assertFalse(book.isBorrowed());
+    }
+
+    @Test
+    void testBorrowAndReturnCycle() {
+        Book book = new Book("The Great Gatsby", "F. Scott Fitzgerald");
+        assertTrue(book.borrowBook());
+        assertTrue(book.returnBook());
+        assertTrue(book.borrowBook());
+        assertTrue(book.isBorrowed());
+    }
 }

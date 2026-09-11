@@ -135,7 +135,7 @@ class MainTest {
         assertTrue(output.contains(MENU));
         assertTrue(output.contains(SORT_MENU));
         assertTrue(output.contains(AVAILABLE_BOOKS));
-        assertTrue(output.contains(book3.toString() + "\n" + book1.toString()));
+        assertTrue(output.contains(book3.toString() + System.lineSeparator() + book1.toString()));
         assertTrue(output.contains(EXIT));
     }
 
@@ -154,7 +154,7 @@ class MainTest {
         assertTrue(output.contains(MENU));
         assertTrue(output.contains(SORT_MENU));
         assertTrue(output.contains(AVAILABLE_BOOKS));
-        assertTrue(output.contains(book1.toString() + "\n" + book3.toString()));
+        assertTrue(output.contains(book1.toString() + System.lineSeparator() + book3.toString()));
         assertTrue(output.contains(EXIT));
     }
 
@@ -191,7 +191,7 @@ class MainTest {
         assertTrue(output.contains(MENU));
         assertTrue(output.contains(SORT_MENU));
         assertTrue(output.contains(ALL_BOOKS));
-        assertTrue(output.contains(book3.toString() + "\n" + book1.toString() + "\n" + book2.toString()));
+        assertTrue(output.contains(book3.toString() + System.lineSeparator() + book1.toString() + System.lineSeparator() + book2.toString()));
         assertTrue(output.contains(EXIT));
     }
 
@@ -210,7 +210,7 @@ class MainTest {
         assertTrue(output.contains(MENU));
         assertTrue(output.contains(SORT_MENU));
         assertTrue(output.contains(ALL_BOOKS));
-        assertTrue(output.contains(book1.toString() + "\n" + book2.toString() + "\n" + book3.toString()));
+        assertTrue(output.contains(book1.toString() + System.lineSeparator() + book2.toString() + System.lineSeparator() + book3.toString()));
         assertTrue(output.contains(EXIT));
     }
 
