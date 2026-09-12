@@ -80,29 +80,29 @@ mvn compile
 mvn -q org.codehaus.mojo:exec-maven-plugin:3.5.0:java -Dexec.mainClass=com.solirius.advanced.library.Main
 ```
 
-Use the numbered menu to add, list, search, borrow, and return books. Catalogue state is stored in SQLite file `library.db` in the working directory and is reloaded the next time the application starts.
+Use the numbered menu to add, list, search, borrow, return, and delete books, or to list books by author. Catalogue state is stored in SQLite file `library.db` in the working directory and is reloaded the next time the application starts.
 
 ## Approach and features implemented
 
 `Book` owns a single book's title, author, and borrow flag. `Library` owns the catalogue and the SQLite connection. `Main` only reads menu input and prints results.
 
-**Graduate:** JUnit tests for `Book` and `Library` (`BookTest`, `LibraryTest`).
+**Graduate:** JUnit tests for `Book`, `Library`, and the menu in `Main` (`BookTest`, `LibraryTest`, `MainTest`).
 
 **Intermediate - exception handling:** Catalogue operations use checked exceptions instead of silent `false`/`null` results:
  * `BookNotFoundException` - search, borrow, or return of a title/author that is not in the library
  * `AlreadyBorrowedException` - borrow of a book that is already out
  * `NotBorrowedException` - return of a book that is not currently borrowed
+ * `DuplicateBookException` - add of a book that already exists with the same title and author (comparison is case-insensitive)
 
-`Main` catches these, prints the exception message, and keeps the menu running. Adding a `null` book is rejected (`addBook` returns `false`). Invalid menu input is rejected without exiting.
+`Main` catches these, prints the exception message, and keeps the menu running. Adding a `null` book, or a book with a blank title or author, is rejected (`IllegalArgumentException`). Invalid menu input is rejected without exiting. When the catalogue is empty, or no copies are available to list or delete, the menu prints a "no books available" message instead of an empty list.
 
-**Intermediate - persistence:** `Main` opens `jdbc:sqlite:library.db`. `Library` creates a `books` table if needed, loads existing rows on startup, inserts on add, and updates `isBorrowed` on borrow and return so a restart restores the catalogue.
+**Intermediate - persistence:** `Main` opens `jdbc:sqlite:library.db`. `Library` creates a `books` table if needed, loads existing rows on startup, inserts on add, deletes on remove, and updates `isBorrowed` on borrow and return so a restart restores the catalogue.
 
-Author search and sorting remain as they were; they are outside this persistence change.
+**Advanced - search:** `searchBook` matches on title or author. The match is case-insensitive and accepts a partial string (`contains`). `searchByAuthor` returns every book whose author matches the same way.
 
+**Advanced - sorting:** Listing all books or available books prompts for sort by author or title before printing.
 
-I added this. Need to make it into good readme just for this section.
-Handle exception when duplication books are being added. same author name and same book name.
-Better search for books, by implementing contains and case insenstive and partialsearch
-Cannot add books with empty parameters.
-Better message when no books are in the system, or when none are available.
-More options such as Search Books by author, delete a book and update a book and better tests and error handling.
+**Additional menu options:**
+ * View all books (borrowed and available)
+ * View all books by author
+ * Delete an available book (choose from a numbered list of books that are not currently borrowed)

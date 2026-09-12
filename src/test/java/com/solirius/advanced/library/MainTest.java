@@ -53,7 +53,7 @@ class MainTest {
 
     @Test
     void testMain_InvalidChoice() {
-        String input = "8\n7\n";
+        String input = "10\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
 
@@ -69,7 +69,7 @@ class MainTest {
 
     @Test
     void testMain_AddBook() throws DuplicateBookException{
-        String input = "1\nMock Title\nMock Author\n7\n";
+        String input = "1\nMock Title\nMock Author\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
 
@@ -88,7 +88,7 @@ class MainTest {
 
     @Test
     void testMain_AddBookFail() throws DuplicateBookException {
-        String input = "1\nMock Title 1\nMock Author 2\n7\n";
+        String input = "1\nMock Title 1\nMock Author 2\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
         when(mockLibrary.addBook(any())).thenReturn(false);
@@ -107,7 +107,7 @@ class MainTest {
 
     @Test
     void testMain_ViewAvailableBooks_SortedInvalid() {
-        String input = "2\n3\n2\n7\n";
+        String input = "2\n3\n2\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
 
@@ -125,7 +125,7 @@ class MainTest {
 
     @Test
     void testMain_ViewAvailableBooks_SortedByAuthor() {
-        String input = "2\n1\n7\n";
+        String input = "2\n1\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
 
@@ -144,7 +144,7 @@ class MainTest {
 
     @Test
     void testMain_ViewAvailableBooks_SortedByTitle() {
-        String input = "2\n2\n7\n";
+        String input = "2\n2\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
 
@@ -163,7 +163,7 @@ class MainTest {
 
     @Test
     void testMain_ViewAllBooks_SortedInvalid() {
-        String input = "3\n3\n2\n7\n";
+        String input = "3\n3\n2\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
 
@@ -181,7 +181,7 @@ class MainTest {
 
     @Test
     void testMain_ViewAllBooks_SortedByAuthor() {
-        String input = "3\n1\n7\n";
+        String input = "3\n1\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
 
@@ -200,7 +200,7 @@ class MainTest {
 
     @Test
     void testMain_ViewAllBooks_SortedByTitle() {
-        String input = "3\n2\n7\n";
+        String input = "3\n2\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
 
@@ -219,7 +219,7 @@ class MainTest {
 
     @Test
     void testMain_SearchBook() throws BookNotFoundException {
-        String input = "4\nMock Title 1\n7\n";
+        String input = "4\nMock Title 1\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
 
@@ -237,7 +237,7 @@ class MainTest {
 
     @Test
     void testMain_SearchBookFailed() throws BookNotFoundException {
-        String input = "4\nMock Title\n7\n";
+        String input = "4\nMock Title\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
         when(mockLibrary.searchBook(anyString())).thenThrow(new BookNotFoundException(BOOK_NOT_FOUND));
@@ -255,7 +255,7 @@ class MainTest {
 
     @Test
     void testMain_BorrowBook() throws BookNotFoundException, AlreadyBorrowedException {
-        String input = "5\nMock Title\n7\n";
+        String input = "5\nMock Title\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
 
@@ -273,7 +273,7 @@ class MainTest {
 
     @Test
     void testMain_BorrowBookFailed() throws BookNotFoundException, AlreadyBorrowedException {
-        String input = "5\nMock Title\n7\n";
+        String input = "5\nMock Title\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
         when(mockLibrary.borrowBook(anyString())).thenThrow(new AlreadyBorrowedException(BOOK_ALREADY_BORROWED));
@@ -291,7 +291,7 @@ class MainTest {
 
     @Test
     void testMain_ReturnBook() throws BookNotFoundException, NotBorrowedException {
-        String input = "6\nMock Title\n7\n";
+        String input = "6\nMock Title\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
 
@@ -309,7 +309,7 @@ class MainTest {
 
     @Test
     void testMain_ReturnBookFailed() throws BookNotFoundException, NotBorrowedException {
-        String input = "6\nMock Title\n7\n";
+        String input = "6\nMock Title\n9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
         when(mockLibrary.returnBook(anyString())).thenThrow(new NotBorrowedException(BOOK_NOT_BORROWED));
@@ -327,17 +327,45 @@ class MainTest {
 
     @Test
     void testMain_DeleteBookNoneAvailable() {
+        String input = "8\n9\n";
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        System.setIn(in);
+        when(mockLibrary.viewAvailableBooks()).thenReturn(List.of());
 
+        Main.main(new String[]{});
+
+        verify(mockLibrary).viewAvailableBooks();
+        verify(mockLibrary, never()).deleteBook(any(Book.class));
+        String output = outputStreamCaptor.toString().trim();
+        assertTrue(output.contains(OPENED));
+        assertTrue(output.contains(WELCOME));
+        assertTrue(output.contains(MENU));
+        assertTrue(output.contains(NO_BOOKS_AVAILABLE));
+        assertTrue(output.contains(EXIT));
     }
 
     @Test
     void testMain_DeleteBookSuccess() {
+        String input = "8\n1\n9\n";
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        System.setIn(in);
 
+        Main.main(new String[]{});
+
+        verify(mockLibrary).viewAvailableBooks();
+        verify(mockLibrary).deleteBook(book1);
+        String output = outputStreamCaptor.toString().trim();
+        assertTrue(output.contains(OPENED));
+        assertTrue(output.contains(WELCOME));
+        assertTrue(output.contains(MENU));
+        assertTrue(output.contains("1 : " + book1));
+        assertTrue(output.contains("2 : " + book3));
+        assertTrue(output.contains(EXIT));
     }
 
     @Test
     void testMain_Exit() {
-        String input = "10\n";
+        String input = "9\n";
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
         Main.main(new String[]{});
